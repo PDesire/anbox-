@@ -2,7 +2,7 @@
 
 pkgname=('anbox-git' 'anbox-modules-dkms-git')
 _pkgname=anbox
-pkgver=r702.3cf7d60
+pkgver=r880.69e75c9
 pkgrel=1
 epoch=1
 arch=('x86_64')
@@ -43,9 +43,13 @@ prepare() {
 
   # Fix loading translators
   sed -i 's/${CMAKE_INSTALL_PREFIX}\/${ANBOX_TRANSLATOR_INSTALL_DIR}/${ANBOX_TRANSLATOR_INSTALL_DIR}/' CMakeLists.txt
-
+		
   # Fix usage of Python 2
   sed -i 's:#!.*python$:&2:' scripts/*.py
+
+  sed -i 's/-std=c++14/-std=c++14 -Wno-error=implicit-fallthrough -Wno-error=switch-default /g' CMakeLists.txt
+
+
 }
 
 build() {
@@ -78,10 +82,11 @@ package_anbox-modules-dkms-git() {
   depends=('dkms')
 
   cd "$srcdir/${_pkgname}"
+  git clone https://github.com/anbox/anbox-modules 
   modules=(ashmem binder)
   for mod in "${modules[@]}"; do
     install -dm 755 $pkgdir/usr/src
-    cp -a kernel/$mod $pkgdir/usr/src/anbox-modules-$mod-$pkgver
+    cp -a anbox-modules/$mod $pkgdir/usr/src/anbox-modules-$mod-$pkgver
   done;
 
   install -Dm 644 -t $pkgdir/usr/lib/modules-load.d $srcdir/anbox.conf
